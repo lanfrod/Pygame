@@ -1,12 +1,13 @@
 import os, sys, random, pygame
 
-global Running
+
 pygame.init()
 color = [0, 0, 0]
 size = w, h = [1080, 800]
 screen = pygame.display.set_mode(size)
 xy = 20
 n = 0
+run = True
 
 
 def load_image(name, colorkey=None):
@@ -30,7 +31,6 @@ all_sprites = pygame.sprite.Group()
 
 class Bomb(pygame.sprite.Sprite):
     image = (load_image("pon.png"))
-    global Running
 
     def __init__(self, *group):
         # НЕОБХОДИМО вызвать конструктор родительского класса Sprite.
@@ -46,10 +46,12 @@ class Bomb(pygame.sprite.Sprite):
         self.v = 1
         self.flag = 65
 
+
     def update(self, s=0):
-        print(h + self.hi)
-        if self.rect.y == 0 or self.rect.y == h + self.hi:
-            Running = False
+        print(self.rect.y)
+        if self.rect.y >= 600 or self.rect.y == h + self.hi:
+            global run
+            run = False
         elif s == 1 or self.k < 50:
             if s == 1:
                 self.k = 0
@@ -85,12 +87,11 @@ class Bomb(pygame.sprite.Sprite):
 
 if __name__ == "__main__":
     Bomb(all_sprites)
-    Running = True
-    while Running:
+    while run:
         pygame.init()
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                Running = False
+                run = False
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_SPACE:
                     all_sprites.update(1)
@@ -99,5 +100,3 @@ if __name__ == "__main__":
         all_sprites.update()
         pygame.time.delay(xy - n)
         pygame.display.flip()
-
-# ..................................................................................................................
