@@ -1,15 +1,16 @@
 import os, sys, random, pygame
 
+global Running
 pygame.init()
-color = [0,0,0]
-size = w, h = [800, 800]
+color = [0, 0, 0]
+size = w, h = [1080, 800]
 screen = pygame.display.set_mode(size)
 xy = 20
 n = 0
 
 
 def load_image(name, colorkey=None):
-    fullname = os.path.join("../img", name)
+    fullname = os.path.join(name)
     if not os.path.isfile(fullname):
         print(f"Файл с изображением '{fullname}' не найден")
         sys.exit()
@@ -28,7 +29,8 @@ all_sprites = pygame.sprite.Group()
 
 
 class Bomb(pygame.sprite.Sprite):
-    image = load_image("pon.png")
+    image = (load_image("pon.png"))
+    global Running
 
     def __init__(self, *group):
         # НЕОБХОДИМО вызвать конструктор родительского класса Sprite.
@@ -45,9 +47,9 @@ class Bomb(pygame.sprite.Sprite):
         self.flag = 65
 
     def update(self, s=0):
-        print(h+self.hi)
+        print(h + self.hi)
         if self.rect.y == 0 or self.rect.y == h + self.hi:
-            running = False
+            Running = False
         elif s == 1 or self.k < 50:
             if s == 1:
                 self.k = 0
@@ -70,29 +72,32 @@ class Bomb(pygame.sprite.Sprite):
 
     def map(self):
         self.choords += 1
-        if self.choords % 250 == 0:
-            #self.v += 1
-            self.flag -= 1
+        # if self.choords % 250 == 0:
+        #     pass
+        # self.v += 1
+        # self.flag -= 1
 
-    #def vel(self):
+    # def vel(self):
     #    global n
     #    if self.choords % 10 == 0:
     #        n += 1
 
-Bomb(all_sprites)
 
-running = True
-while running:
-    pygame.init()
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            running = False
-        if event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_SPACE:
-                all_sprites.update(1)
-    screen.fill(pygame.Color('white'))
-    all_sprites.draw(screen)
-    all_sprites.update()
-    pygame.time.delay(xy - n)
-    pygame.display.flip()
+if __name__ == "__main__":
+    Bomb(all_sprites)
+    Running = True
+    while Running:
+        pygame.init()
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                Running = False
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_SPACE:
+                    all_sprites.update(1)
+        screen.fill(pygame.Color('white'))
+        all_sprites.draw(screen)
+        all_sprites.update()
+        pygame.time.delay(xy - n)
+        pygame.display.flip()
 
+# ..................................................................................................................
