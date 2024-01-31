@@ -3,7 +3,7 @@ import os, sys, random, pygame
 
 pygame.init()
 color = [0, 0, 0]
-size = w, h = [1080, 800]
+size = w, h = [1080, 720]
 screen = pygame.display.set_mode(size)
 xy = 20
 n = 0
@@ -29,12 +29,13 @@ def load_image(name, colorkey=None):
 all_sprites = pygame.sprite.Group()
 
 
-class Bomb(pygame.sprite.Sprite):
-    image = load_image('img/'+ "pon.png")
+class Bird(pygame.sprite.Sprite):
+    image = load_image('img/'+ "tt.png")
+    image = pygame.transform.scale(image, (100, 100))
 
     def __init__(self, *group):
         super().__init__(*group)
-        self.image = Bomb.image
+        self.image = Bird.image
         self.rect = self.image.get_rect()
         self.wi, self.hi = self.image.get_size()
         self.rect.x = 0
@@ -42,11 +43,11 @@ class Bomb(pygame.sprite.Sprite):
         self.k = 50
         self.choords = self.wi
         self.v = 5
-        self.flag = 65
+        self.flag = 50
 
 
     def update(self, s=0):
-        print(self.rect.y)
+        print(self.rect.x, self.rect.y, self.choords)
         if self.rect.y <= 0 and self.k < self.flag:
             self.k = self.flag
         elif self.rect.y >= h - self.wi:
@@ -58,18 +59,17 @@ class Bomb(pygame.sprite.Sprite):
             self.press()
         elif self.k < self.flag:
             self.k += 1
-            self.rect.x += self.v
         elif self.rect.y < h and self.k == self.flag:
             self.rect.y += self.v
-            self.rect.x += self.v
         if self.rect.x >= w:
             self.rect.x = 0 - self.wi
+        if self.rect.x < (w - self.wi) // 4:
+            self.rect.x += self.v
         self.map()
 
     def press(self):
         if self.rect.y != 0 and self.rect.y != h:
             self.rect.y -= self.v
-            self.rect.x += 1
         self.k += 1
 
     def map(self):
@@ -86,7 +86,8 @@ class Bomb(pygame.sprite.Sprite):
 
 
 if __name__ == "__main__":
-    Bomb(all_sprites)
+    Bird(all_sprites)
+
     while run:
         pygame.init()
         for event in pygame.event.get():
@@ -95,8 +96,10 @@ if __name__ == "__main__":
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_SPACE:
                     all_sprites.update(1)
-        screen.fill(pygame.Color('white'))
+        background_image = pygame.image.load('img/bg.png')
+        background_image = pygame.transform.scale(background_image, size)
+        screen.blit(background_image, (0, 0))
         all_sprites.draw(screen)
         all_sprites.update()
-        pygame.time.delay(xy - n)
+        pygame.time.delay(xy)
         pygame.display.flip()
