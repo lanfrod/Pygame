@@ -35,14 +35,14 @@ all_sprites = pygame.sprite.Group()
 
 class Bird(pygame.sprite.Sprite):
     qu = 60
-    image = load_image('img/' + "test4.png")
+    #name = ....
+    #image = load_image(f'img/birdews{name}.png')
+    image = load_image(f'img/birdews.png')
     image = pygame.transform.scale(image, (4 * qu, qu))
-    bird = load_image('img/' + "ttt.png")
-    bird = pygame.transform.scale(bird, (qu, qu))
 
     def __init__(self, *group):
         super().__init__(*group)
-        self.image = Bird.bird
+        self.image = Bird.image.subsurface(0, 0, 60, 60)
         self.rect = self.image.get_rect()
         self.wi, self.hi = self.image.get_size()
         self.rect.x = 0
@@ -51,16 +51,25 @@ class Bird(pygame.sprite.Sprite):
         self.heighttonnel = Bird.qu * 3
         self.uptonnel = h // 2
         self.time = 0
+        self.k = 0
+        self.flag = False
 
     def update(self, s=0):
         global score
+        if s != self.flag:
+            self.k = 0
+            self.flag = not self.flag
         if s == 1:
             if self.rect.y <= 0:
                 pass
             else:
                 self.rect.y -= self.v
+            if self.k < 90:
+                self.k += 1
         else:
             self.rect.y += self.v
+            if self.k > -90:
+                self.k -= 1
         if self.rect.y >= h - self.wi:
             global runny
             runny = False
@@ -70,9 +79,8 @@ class Bird(pygame.sprite.Sprite):
         self.time += 0.2
         if int(self.time) % 5 == 0:
             self.time = 1
-
         self.image = Bird.image.subsurface(int(self.time - 1) * Bird.qu, 0, 60, 60)
-        screen.blit(self.image, self.rect)
+        self.image = pygame.transform.rotate(self.image, int(self.k))
         for si in sii:
             if self.rect.colliderect(si):
                 runny = False
@@ -126,12 +134,9 @@ if __name__ == "__main__":
                     sii.remove(si)
         if not runny:
             f1 = pygame.font.Font(None, 100)
-            text1 = f1.render(f'Score: {int(score)}', True,
-                          (180, 0, 0))
+            text1 = f1.render(f'Счёт: {int(score)}', True,
+                          'green')
             screen.blit(text1, (w//2, h//2 - 100))
             f2 = pygame.font.Font(None, 160)
-            text2 = f2.render('Wasted', True,
-                              (180, 0, 0))
-            screen.blit(text2, (w // 2, h // 2))
         clock.tick(FPS)
         pygame.display.flip()
