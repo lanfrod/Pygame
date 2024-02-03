@@ -14,7 +14,6 @@ run = True
 runny = True
 
 
-
 def load_image(name, colorkey=None):
     fullname = os.path.join(name)
     if not os.path.isfile(fullname):
@@ -35,8 +34,18 @@ all_sprites = pygame.sprite.Group()
 
 
 class Bird(pygame.sprite.Sprite):
-    image = load_image('img/'+ "ttt.png")
-    image = pygame.transform.scale(image, (100, 100))
+    qu = 60
+    image = load_image('img/' + "ttt.png")
+    image = pygame.transform.scale(image, (qu, qu))
+    imageup1 = load_image('img/' + "Sprite-0002.png")
+    imageup1 = pygame.transform.scale(imageup1, (qu, qu))
+    imageup2 = load_image('img/' + "Sprite-0003.png")
+    imageup2 = pygame.transform.scale(imageup2, (qu, qu))
+    imagedo1 = load_image('img/' + "Sprite-0004.png")
+    imagedo1 = pygame.transform.scale(imagedo1, (qu, qu))
+    imagedo2 = load_image('img/' + "Sprite-0005.png")
+    imagedo2 = pygame.transform.scale(imagedo2, (qu, qu))
+
 
     def __init__(self, *group):
         super().__init__(*group)
@@ -45,18 +54,31 @@ class Bird(pygame.sprite.Sprite):
         self.wi, self.hi = self.image.get_size()
         self.rect.x = 0
         self.rect.y = 400
-        self.v = 5
+        self.v = 7
+        self.heighttonnel = Bird.qu * 3
+        self.uptonnel = h // 2
+        self.time1 = 0
+        self.time2 = 0
 
     def update(self, s=0):
         global score
-        print(self.rect.x, self.rect.y, score)
         if s == 1:
-            if self.rect.y == 0:
+            self.time1 += 0.2
+            if self.rect.y <= 0:
                 pass
             else:
                 self.rect.y -= self.v
+            if int(self.time1) % 2 == 0:
+                screen.blit(Bird.imageup1, self.rect)
+            else:
+                screen.blit(Bird.imageup2, self.rect)
         else:
             self.rect.y += self.v
+            self.time2 += 0.2
+            if int(self.time2) % 2 == 0:
+                screen.blit(Bird.imagedo1, self.rect)
+            else:
+                screen.blit(Bird.imagedo2, self.rect)
         if self.rect.y >= h - self.wi:
             global runny
             runny = False
@@ -68,9 +90,16 @@ class Bird(pygame.sprite.Sprite):
                 runny = False
 
     def map(self):
-        if len(sii) == 0 or sii[len(sii) - 1].x < w - 200:
-            sii.append(pygame.Rect(w + 50, 0, 50, 200))
-            sii.append(pygame.Rect(w + 50, h - 201, 50,  200))
+        if len(sii) == 0 or sii[len(sii) - 1].x < w - 300:
+            sii.append(pygame.Rect(w + 50, 0, 52, self.uptonnel - self.heighttonnel // 2))
+            sii.append(pygame.Rect(w + 50, self.uptonnel + self.heighttonnel // 2, 52,
+                                   h - self.uptonnel + self.heighttonnel // 2))
+            ew = random.randint(-200, 200)
+            self.uptonnel += ew
+            if self.uptonnel < self.heighttonnel:
+                self.uptonnel = self.heighttonnel
+            elif self.uptonnel > h - self.heighttonnel:
+                self.uptonnel = h - self.heighttonnel
 
 
 if __name__ == "__main__":
@@ -88,15 +117,18 @@ if __name__ == "__main__":
         background_image = pygame.transform.scale(background_image, size)
         screen.blit(background_image, (0, 0))
         all_sprites.draw(screen)
-        f1 = pygame.font.Font(None, 30 )
-        text1 = f1.render(f'Score: {int(score)}', True,
-                          (180, 0, 0))
-        screen.blit(text1, (0, 0))
+        cdown = load_image('img/' + 'colonaDAWN.png')
+        cup = load_image('img/' + 'colonaUP.png')
         if runny:
             if ok == 0:
                 all_sprites.update()
             for si in sii:
-                pygame.draw.rect(screen, pygame.Color('green'), si)
+                if si.y == 0:
+                    rect = cup.get_rect(bottomleft=si.bottomleft)
+                    screen.blit(cup, rect)
+                else:
+                    rect = cdown.get_rect(topleft=si.topleft)
+                    screen.blit(cdown, rect)
             for _ in range(len(sii) - 1, -1, -1):
                 si = sii[_]
                 si.x -= 5
@@ -105,6 +137,10 @@ if __name__ == "__main__":
                 if si.x + 50 < 0:
                     sii.remove(si)
         if not runny:
+            f1 = pygame.font.Font(None, 100)
+            text1 = f1.render(f'Score: {int(score)}', True,
+                          (180, 0, 0))
+            screen.blit(text1, (w//2, h//2 - 100))
             f2 = pygame.font.Font(None, 160)
             text2 = f2.render('Wasted', True,
                               (180, 0, 0))
