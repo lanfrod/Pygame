@@ -10,8 +10,10 @@ n = 0
 score = 0
 sii = []
 clock = pygame.time.Clock()
-run = True
+r = True
 runny = True
+lob = True
+
 
 
 def load_image(name, colorkey=None):
@@ -29,23 +31,88 @@ def load_image(name, colorkey=None):
         image = image.convert_alpha()
     return image
 
+class Lobby():
+    def __init__(self):
+        super().__init__()
+        self.bg = pygame.image.load("img/bg2.png")
+        bg = pygame.transform.scale(self.bg, size)
+        screen.blit(bg, (0, 0))
+        self.WHITE, self.BLACK, self.GRAY = (255, 255, 255), (0, 0, 0), (128, 128, 128)
+        self.font = pygame.font.Font(None, 50)
+        self.button_width = 200
+        self.button_height = 50
+        self.button_x = w // 2 - self.button_width // 2
+        self.button_y1 = h // 2 - self.button_height // 2 - 50
+        self.button_y2 = h // 2 - self.button_height // 2 + 50
+        self.button_y3 = h // 2 - self.button_height // 2 + 150
+        self.start_button = pygame.Rect(w // 2 - self.button_width // 2, h // 2 - self.button_height // 2 - 50, 200, 50)
+        self.exit_button = pygame.Rect(w // 2 - self.button_width // 2, h // 2 - self.button_height // 2 + 50, 200, 50)
+        self.syst_button = pygame.Rect(w // 2 - self.button_width // 2, h // 2 - self.button_height // 2 + 150, 200, 50)
+        self.scenescur = None
+        self.scene1()
+        while self.scenescur is not None:
+            self.scenescur()
+
+    def swiftscene(self, scene):
+        self.scenescur = scene
+
+    def scene1(self):
+        run = True
+        while run:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    run = False
+                    self.swiftscene(None)
+                elif event.type == pygame.MOUSEBUTTONDOWN:
+                    if event.button == 1:
+                        if self.start_button.collidepoint(event.pos):
+                            self.swiftscene(self.scene2)
+                            run = False
+                        elif self.exit_button.collidepoint(event.pos):
+                            run = False
+                            self.swiftscene(None)
+                        elif self.syst_button.collidepoint(event.pos):
+                            run = False
+                            self.swiftscene(self.scene2)
+            screen.fill(self.WHITE)
+            screen.blit(self.bg, (0, 0))
+            pygame.draw.rect(screen, self.GRAY, self.start_button)
+            pygame.draw.rect(screen, self.GRAY, self.exit_button)
+            pygame.draw.rect(screen, self.GRAY, self.syst_button)
+            start_text = self.font.render('Начать игру', True, self.BLACK)
+            exit_text = self.font.render('Выход', True, self.BLACK)
+            syst_text = self.font.render('Настройки', True, self.BLACK)
+            screen.blit(start_text, (self.button_x + self.button_width // 2 - start_text.get_width() // 2,
+                                     self.button_y1 + self.button_height // 2 - start_text.get_height() // 2))
+            screen.blit(exit_text, (self.button_x + self.button_width // 2 - exit_text.get_width() // 2,
+                                    self.button_y2 + self.button_height // 2 - exit_text.get_height() // 2))
+            screen.blit(syst_text, (self.button_x + self.button_width // 2 - syst_text.get_width() // 2,
+                                    self.button_y3 + self.button_height // 2 - syst_text.get_height() // 2))
+            pygame.display.flip()
+
+    def scene2(self):
+        global lob
+        lob = False
+
+
+    def scene3(self):
+        run = True
+        while run:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    run = False
+                    self.swiftscene(None)
+            screen.fill(self.WHITE)
+            pygame.display.flip()
+
+
 
 all_sprites = pygame.sprite.Group()
 
 
 class Bird(pygame.sprite.Sprite):
-    qu = 60
-    image = load_image('img/' + "ttt.png")
-    image = pygame.transform.scale(image, (qu, qu))
-    imageup1 = load_image('img/' + "Sprite-0002.png")
-    imageup1 = pygame.transform.scale(imageup1, (qu, qu))
-    imageup2 = load_image('img/' + "Sprite-0003.png")
-    imageup2 = pygame.transform.scale(imageup2, (qu, qu))
-    imagedo1 = load_image('img/' + "Sprite-0004.png")
-    imagedo1 = pygame.transform.scale(imagedo1, (qu, qu))
-    imagedo2 = load_image('img/' + "Sprite-0005.png")
-    imagedo2 = pygame.transform.scale(imagedo2, (qu, qu))
-
+    image = load_image('img/'+ "ttt.png")
+    image = pygame.transform.scale(image, (100, 100))
 
     def __init__(self, *group):
         super().__init__(*group)
@@ -54,31 +121,18 @@ class Bird(pygame.sprite.Sprite):
         self.wi, self.hi = self.image.get_size()
         self.rect.x = 0
         self.rect.y = 400
-        self.v = 7
-        self.heighttonnel = Bird.qu * 3
-        self.uptonnel = h // 2
-        self.time1 = 0
-        self.time2 = 0
+        self.v = 5
 
     def update(self, s=0):
         global score
+        print(self.rect.x, self.rect.y, score)
         if s == 1:
-            self.time1 += 0.2
-            if self.rect.y <= 0:
+            if self.rect.y == 0:
                 pass
             else:
                 self.rect.y -= self.v
-            if int(self.time1) % 2 == 0:
-                screen.blit(Bird.imageup1, self.rect)
-            else:
-                screen.blit(Bird.imageup2, self.rect)
         else:
             self.rect.y += self.v
-            self.time2 += 0.2
-            if int(self.time2) % 2 == 0:
-                screen.blit(Bird.imagedo1, self.rect)
-            else:
-                screen.blit(Bird.imagedo2, self.rect)
         if self.rect.y >= h - self.wi:
             global runny
             runny = False
@@ -90,26 +144,28 @@ class Bird(pygame.sprite.Sprite):
                 runny = False
 
     def map(self):
-        if len(sii) == 0 or sii[len(sii) - 1].x < w - 300:
-            sii.append(pygame.Rect(w + 50, 0, 52, self.uptonnel - self.heighttonnel // 2))
-            sii.append(pygame.Rect(w + 50, self.uptonnel + self.heighttonnel // 2, 52,
-                                   h - self.uptonnel + self.heighttonnel // 2))
-            ew = random.randint(-200, 200)
-            self.uptonnel += ew
-            if self.uptonnel < self.heighttonnel:
-                self.uptonnel = self.heighttonnel
-            elif self.uptonnel > h - self.heighttonnel:
-                self.uptonnel = h - self.heighttonnel
+        if len(sii) == 0 or sii[len(sii) - 1].x < w - 200:
+            sii.append(pygame.Rect(w + 50, 0, 50, 200))
+            sii.append(pygame.Rect(w + 50, h - 201, 50,  200))
 
 
 if __name__ == "__main__":
+    Lobby()
+    while lob:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                lob = False
+                r = False
+                runny = False
+        clock.tick(FPS)
+        pygame.display.flip()
     Bird(all_sprites)
-    while run:
+    while r:
         ok = 0
         pygame.init()
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                run = False
+                r = False
         if (pygame.key.get_pressed()[pygame.K_SPACE] or pygame.mouse.get_pressed()[0]) and runny:
             all_sprites.update(1)
             ok = 1
@@ -117,18 +173,15 @@ if __name__ == "__main__":
         background_image = pygame.transform.scale(background_image, size)
         screen.blit(background_image, (0, 0))
         all_sprites.draw(screen)
-        cdown = load_image('img/' + 'colonaDAWN.png')
-        cup = load_image('img/' + 'colonaUP.png')
+        f1 = pygame.font.Font(None, 30 )
+        text1 = f1.render(f'Score: {int(score)}', True,
+                          (180, 0, 0))
+        screen.blit(text1, (0, 0))
         if runny:
             if ok == 0:
                 all_sprites.update()
             for si in sii:
-                if si.y == 0:
-                    rect = cup.get_rect(bottomleft=si.bottomleft)
-                    screen.blit(cup, rect)
-                else:
-                    rect = cdown.get_rect(topleft=si.topleft)
-                    screen.blit(cdown, rect)
+                pygame.draw.rect(screen, pygame.Color('green'), si)
             for _ in range(len(sii) - 1, -1, -1):
                 si = sii[_]
                 si.x -= 5
@@ -137,10 +190,6 @@ if __name__ == "__main__":
                 if si.x + 50 < 0:
                     sii.remove(si)
         if not runny:
-            f1 = pygame.font.Font(None, 100)
-            text1 = f1.render(f'Score: {int(score)}', True,
-                          (180, 0, 0))
-            screen.blit(text1, (w//2, h//2 - 100))
             f2 = pygame.font.Font(None, 160)
             text2 = f2.render('Wasted', True,
                               (180, 0, 0))
