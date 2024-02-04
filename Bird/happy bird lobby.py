@@ -12,6 +12,7 @@ sii = []
 clock = pygame.time.Clock()
 run = True
 runny = True
+rec = True
 
 
 def load_image(name, colorkey=None):
@@ -37,7 +38,7 @@ class Bird(pygame.sprite.Sprite):
     qu = 60
     #name = ....
     #image = load_image(f'img/birdews{name}.png')
-    image = load_image(f'img/birdews.png')
+    image = load_image(f'img/birdews2.png')
     image = pygame.transform.scale(image, (4 * qu, qu))
 
     def __init__(self, *group):
@@ -61,7 +62,6 @@ class Bird(pygame.sprite.Sprite):
             self.k = 0
             self.flag = not self.flag
         if not runny:
-            print(self.rect.x, self.rect.y)
             if self.rot <= 25:
                 self.rot += 1
                 self.rect.y -= self.v
@@ -107,9 +107,14 @@ class Bird(pygame.sprite.Sprite):
                 self.uptonnel = h - self.heighttonnel
 
 
-
 if __name__ == "__main__":
     Bird(all_sprites)
+    try:
+        with open('best.txt', 'r') as file:
+            record = float(file.read().split('\n')[0])
+    except:
+        record = 0
+    print(record)
     while run:
         ok = 0
         pygame.init()
@@ -144,10 +149,14 @@ if __name__ == "__main__":
                     sii.remove(si)
         if not runny:
             all_sprites.update()
+            if score > record and rec:
+                with open('best.txt', 'w') as file: file.write(str(int(score)))
+                f2 = pygame.font.Font(None, 60)
+                text2 = f2.render(f'Новый рекорд!', True, 'blue')
+                screen.blit(text2, (w//2, h//2))
             f1 = pygame.font.Font(None, 100)
             text1 = f1.render(f'Счёт: {int(score)}', True,
                           'green')
             screen.blit(text1, (w//2, h//2 - 100))
-            f2 = pygame.font.Font(None, 160)
         clock.tick(FPS)
         pygame.display.flip()
