@@ -53,13 +53,22 @@ class Bird(pygame.sprite.Sprite):
         self.time = 0
         self.k = 0
         self.flag = False
+        self.rot = 0
 
     def update(self, s=0):
-        global score
+        global score, runny
         if s != self.flag:
             self.k = 0
             self.flag = not self.flag
-        if s == 1:
+        if not runny:
+            print(self.rect.x, self.rect.y)
+            if self.rot <= 25:
+                self.rot += 1
+                self.rect.y -= self.v
+            elif self.rot > 25:
+                self.rect.y += self.v
+            self.image = pygame.transform.rotate(self.image, 1)
+        elif s == 1:
             if self.rect.y <= 0:
                 pass
             else:
@@ -71,16 +80,16 @@ class Bird(pygame.sprite.Sprite):
             if self.k > -90:
                 self.k -= 1
         if self.rect.y >= h - self.wi:
-            global runny
             runny = False
         if self.rect.x < (w - self.wi) // 3:
             self.rect.x += self.v
-        self.map()
-        self.time += 0.2
-        if int(self.time) % 5 == 0:
-            self.time = 1
-        self.image = Bird.image.subsurface(int(self.time - 1) * Bird.qu, 0, 60, 60)
-        self.image = pygame.transform.rotate(self.image, int(self.k))
+        if runny:
+            self.map()
+            self.time += 0.2
+            if int(self.time) % 5 == 0:
+                self.time = 1
+            self.image = Bird.image.subsurface(int(self.time - 1) * Bird.qu, 0, 60, 60)
+            self.image = pygame.transform.rotate(self.image, int(self.k))
         for si in sii:
             if self.rect.colliderect(si):
                 runny = False
@@ -96,6 +105,7 @@ class Bird(pygame.sprite.Sprite):
                 self.uptonnel = self.heighttonnel
             elif self.uptonnel > h - self.heighttonnel:
                 self.uptonnel = h - self.heighttonnel
+
 
 
 if __name__ == "__main__":
@@ -133,6 +143,7 @@ if __name__ == "__main__":
                 if si.x + 50 < 0:
                     sii.remove(si)
         if not runny:
+            all_sprites.update()
             f1 = pygame.font.Font(None, 100)
             text1 = f1.render(f'Счёт: {int(score)}', True,
                           'green')
