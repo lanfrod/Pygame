@@ -118,9 +118,14 @@ def scene2(cnt):
             self.k = 0
             self.flag = False
             self.rot = 0
+            self.dieflag = True
+            self.hitsound = True
 
         def update(self, s=0):
             global score, running
+            if s != self.flag and s == 1:
+                print(1)
+                upsound.play()
             if s != self.flag:
                 self.k = 0
                 self.flag = not self.flag
@@ -130,6 +135,9 @@ def scene2(cnt):
                     self.rect.y -= self.bird_speed
                 elif self.rot > 25:
                     self.rect.y += self.bird_speed
+                if self.rot > 25 and self.dieflag:
+                    self.dieflag = False
+                    diesound.play()
                 # angle = 5
                 self.image = pygame.transform.rotate(self.image, 1)
             elif s == 1:
@@ -145,6 +153,9 @@ def scene2(cnt):
                     self.k -= 1
             if self.rect.y >= h - self.wi:
                 running = False
+                if self.hitsound:
+                    hitsound.play()
+                    self.hitsound = False
             if self.rect.x < (w - self.wi) // 3:
                 self.rect.x += self.bird_speed
             if running:
@@ -157,6 +168,9 @@ def scene2(cnt):
             for si in sii:
                 if self.rect.colliderect(si):
                     running = False
+                    if self.hitsound:
+                        hitsound.play()
+                        self.hitsound = False
 
         def map(self):
             if len(sii) == 0 or sii[len(sii) - 1].x < w - 300:
@@ -177,8 +191,11 @@ def scene2(cnt):
                 record = float(file.read().split('\n')[0])
         except:
             record = 0
-        print(record)
         while run:
+            upsound = pygame.mixer.Sound('sounds/Wing.wav')
+            pointsound = pygame.mixer.Sound('sounds/Point.wav')
+            hitsound = pygame.mixer.Sound('sounds/Hit.wav')
+            diesound = pygame.mixer.Sound('sounds/Die.wav')
             ok = 0
             pygame.init()
             for event in pygame.event.get():
@@ -198,7 +215,7 @@ def scene2(cnt):
             if (pygame.key.get_pressed()[pygame.K_SPACE] or pygame.mouse.get_pressed()[0]) and running:
                 all_sprites.update(1)
                 ok = 1
-            background_image = pygame.image.load('img/bg2.png')
+            background_image = pygame.image.load('img/bg.png')
             background_image = pygame.transform.scale(background_image, size)
             screen.blit(background_image, (0, 0))
             all_sprites.draw(screen)
@@ -220,6 +237,7 @@ def scene2(cnt):
                     si.x -= 5
                     if si.x == 300:
                         score += 0.5
+                        pointsound.play()
                     if si.x + 50 < 0:
                         sii.remove(si)
             if not running:
@@ -247,9 +265,12 @@ def scene2(cnt):
 
 
 def scene3():
+    cnt = 1
+    time = 0
     run = True
-    first_skin = pygame.Rect(WIDTH // 2 - button_width // 2, HEIGHT // 2 - button_height // 2 - 50, 200, 50)
-    second_skin = pygame.Rect(WIDTH // 2 - button_width // 2, HEIGHT // 2 - button_height // 2 + 50, 200, 50)
+    first_skin = pygame.Rect(WIDTH // 2 - button_width // 2 - 100, HEIGHT // 2 - button_height // 2 - 50, 100, 100)
+    second_skin = pygame.Rect(WIDTH // 2 + button_width // 2, HEIGHT // 2 - button_height // 2 - 50, 100, 100)
+    exit = pygame.Rect(WIDTH // 2 - button_width // 2, HEIGHT // 2 + 200, 200, 50)
     while run:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -258,18 +279,37 @@ def scene3():
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 if event.button == 1:
                     if first_skin.collidepoint(event.pos):
-                        swiftscene(scene1(1))
-                        run = False
+                        print(cnt)
+                        cnt -= 1
+                        if cnt == 0:
+                            cnt = 3
                     elif second_skin.collidepoint(event.pos):
+                        print(cnt)
+                        cnt += 1
+                        if cnt == 4:
+                            cnt = 1
+                    elif exit.collidepoint(event.pos):
                         run = False
-                        swiftscene(scene1(2))
-        screen.fill(WHITE)
-        first_text = font.render('1', True, BLACK)
-        second_text = font.render('2', True, BLACK)
+                        swiftscene(scene1(cnt))
+        background_image = pygame.image.load('img/bg.png')
+        background_image = pygame.transform.scale(background_image, (WIDTH, HEIGHT))
+        screen.blit(background_image, (0, 0))
+        time += 0.1
+        if int(time) % 5 == 0:
+            time = 1
+        image = pygame.image.load(f'img/birdews{cnt}.png')
+        image = pygame.transform.scale(image, (480, 120))
+        image = image.subsurface((int(time) - 1) * 120, 0, 120, 120)
+        screen.blit(image, (WIDTH // 2 - button_width // 2 + 35, HEIGHT // 2 - button_height // 2 - 70))
+        first_text = font.render('Меню', True, BLACK)
         screen.blit(first_text, (button_x + button_width // 2 - first_text.get_width() // 2,
-                                 button_y1 + button_height // 2 - first_text.get_height() // 2))
-        screen.blit(second_text, (button_x + button_width // 2 - second_text.get_width() // 2,
-                                  button_y2 + button_height // 2 - second_text.get_height() // 2))
+                                 HEIGHT // 2 + 200 - first_text.get_height() // 2))
+        left_ar = pygame.image.load('img/strel2.png')
+        left_ar = pygame.transform.scale(left_ar, (100, 100))
+        screen.blit(left_ar, (WIDTH // 2 - button_width // 2 - 100, HEIGHT // 2 - button_height // 2 - 50))
+        right_ar = pygame.image.load('img/strel.png')
+        right_ar = pygame.transform.scale(right_ar, (100, 100))
+        screen.blit(right_ar, (WIDTH // 2 + button_width // 2, HEIGHT // 2 - button_height // 2 - 50))
         pygame.display.flip()
 
 
