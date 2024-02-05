@@ -73,16 +73,17 @@ def lobby(skin=1, bg=1):
 all_sprites = pygame.sprite.Group()
 
 
-def game(cnt):
+def game(num_skin):
     pygame.init()
     size = w, h = [900, 720]
     screen = pygame.display.set_mode(size)
     FPS = 60
     score = 0
-    sii = []
+    flag_hard = True
+    coloms = []
     clock = pygame.time.Clock()
     run = True
-    rec = True
+    rec_flag = True
 
     def load_image(name, colorkey=None):
         fullname = os.path.join(name)
@@ -104,14 +105,14 @@ def game(cnt):
     class Bird(pygame.sprite.Sprite):
         qu = 60
 
-        image = load_image(f'img/birdews{cnt}.png')
+        image = load_image(f'img/birdews{num_skin}.png')
         image = pygame.transform.scale(image, (4 * qu, qu))
 
         def __init__(self, *group):
             super().__init__(*group)
             self.image = Bird.image.subsurface(0, 0, 60, 60)
             self.rect = self.image.get_rect()
-            self.wi, self.hi = self.image.get_size()
+            self.weight_im, self.height_im = self.image.get_size()
             self.rect.x = 0
             self.rect.y = 0
             self.bird_speed = 7
@@ -120,26 +121,26 @@ def game(cnt):
             self.time = 0
             self.k = 0
             self.flag = False
-            self.rot = 0
-            self.dieflag = True
-            self.hitsound = True
+            self.time_rotation = 0
+            self.diesound_flag = True
+            self.hitsound_flag = True
+            self.flag_score = True
 
         def update(self, s=0):
-            global score, running
+            global running
             if s != self.flag and s == 1:
-                print(1)
                 upsound.play()
             if s != self.flag:
                 self.k = 0
                 self.flag = not self.flag
             if not running:
-                if self.rot <= 25:
-                    self.rot += 1
+                if self.time_rotation <= 25:
+                    self.time_rotation += 1
                     self.rect.y -= self.bird_speed
-                elif self.rot > 25:
+                elif self.time_rotation > 25:
                     self.rect.y += self.bird_speed
-                if self.rot > 25 and self.dieflag:
-                    self.dieflag = False
+                if self.time_rotation > 25 and self.diesound_flag:
+                    self.diesound_flag = False
                     diesound.play()
                 # angle = 5
                 self.image = pygame.transform.rotate(self.image, 1)
@@ -154,13 +155,18 @@ def game(cnt):
                 self.rect.y += self.bird_speed
                 if self.k > -90:
                     self.k -= 1
-            if self.rect.y >= h - self.wi:
+            if self.rect.y >= h - self.weight_im:
                 running = False
-                if self.hitsound:
+                if self.hitsound_flag:
                     hitsound.play()
-                    self.hitsound = False
-            if self.rect.x < (w - self.wi) // 3:
+                    self.hitsound_flag = False
+            if self.rect.x < (w - self.weight_im) // 3:
                 self.rect.x += self.bird_speed
+            if score % 10 != 0:
+                self.flag_score = True
+            if score % 10 == 0 and score != 0 and self.flag_score and self.height_tunnel > 120:
+                self.height_tunnel -= 5
+                self.flag_score = False
             if running:
                 self.map()
                 self.time += 0.2
@@ -168,20 +174,20 @@ def game(cnt):
                     self.time = 1
                 self.image = Bird.image.subsurface(int(self.time - 1) * Bird.qu, 0, 60, 60)
                 self.image = pygame.transform.rotate(self.image, int(self.k))
-            for si in sii:
+            for si in coloms:
                 if self.rect.colliderect(si):
                     running = False
-                    if self.hitsound:
+                    if self.hitsound_flag:
                         hitsound.play()
-                        self.hitsound = False
+                        self.hitsound_flag = False
 
         def map(self):
-            if len(sii) == 0 or sii[len(sii) - 1].x < w - 300:
-                sii.append(pygame.Rect(w + 50, 0, 52, self.upper_tunnel - self.height_tunnel // 2))
-                sii.append(pygame.Rect(w + 50, self.upper_tunnel + self.height_tunnel // 2, 52,
+            if len(coloms) == 0 or coloms[len(coloms) - 1].x < w - 300:
+                coloms.append(pygame.Rect(w + 50, 0, 52, self.upper_tunnel - self.height_tunnel // 2))
+                coloms.append(pygame.Rect(w + 50, self.upper_tunnel + self.height_tunnel // 2, 52,
                                        h - self.upper_tunnel + self.height_tunnel // 2))
-                ew = random.randint(-200, 200)
-                self.upper_tunnel += ew
+                size_tonnel = random.randint(-200, 200)
+                self.upper_tunnel += size_tonnel
                 if self.upper_tunnel < self.height_tunnel:
                     self.upper_tunnel = self.height_tunnel
                 elif self.upper_tunnel > h - self.height_tunnel:
@@ -214,11 +220,11 @@ def game(cnt):
                     if NewGame_button.collidepoint(event.pos):
                         running = True
                         run = False
-                        swiftscene(game(cnt))
+                        swiftscene(game(num_skin))
                     elif menu_button.collidepoint(event.pos):
                         running = True
                         run = False
-                        swiftscene(lobby(cnt))
+                        swiftscene(lobby(num_skin))
             if (pygame.key.get_pressed()[pygame.K_SPACE] or pygame.mouse.get_pressed()[0]) and running:
                 all_sprites.update(1)
                 ok = 1
@@ -229,9 +235,13 @@ def game(cnt):
             cdown = load_image('img/' + 'colonaDAWN.png')
             cup = load_image('img/' + 'colonaUP.png')
             if running:
+                f3 = pygame.font.Font(None, 40)
+                text3 = f3.render(f"Счёт: {int(score)}", True,
+                                  'green')
+                screen.blit(text3, (0, 0))
                 if ok == 0:
                     all_sprites.update()
-                for si in sii:
+                for si in coloms:
                     if si.y == 0:
                         rect = cup.get_rect(bottomleft=si.bottomleft)
                         screen.blit(cup, rect)
@@ -239,17 +249,17 @@ def game(cnt):
                         rect = cdown.get_rect(topleft=si.topleft)
                         screen.blit(cdown, rect)
                 # colons speed
-                for _ in range(len(sii) - 1, -1, -1):
-                    si = sii[_]
+                for _ in range(len(coloms) - 1, -1, -1):
+                    si = coloms[_]
                     si.x -= 5
                     if si.x == 300:
                         score += 0.5
                         pointsound.play()
                     if si.x + 50 < 0:
-                        sii.remove(si)
+                        coloms.remove(si)
             if not running:
                 all_sprites.update()
-                if score > record and rec:
+                if score > record and rec_flag:
                     with open('best.txt', 'w') as file: file.write(str(int(score)))
                     f2 = pygame.font.Font(None, 60)
                     text2 = f2.render(f'Новый рекорд!', True, 'blue')
